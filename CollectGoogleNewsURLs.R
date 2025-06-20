@@ -57,7 +57,7 @@ if (length(results_list) > 0) {
 # If at least one feed result was stored do.call(rbind, ) combines all data frames in results_list into one larger df stacking them row-wise
   
 # Write the combined data frame to a CSV file
-  write.csv(combined_df, "~/Desktop/ebola_news.csv", row.names = FALSE)
+  write.csv(combined_df, "~/Desktop/EbolaNews.csv", row.names = FALSE)
 } else {
   message("No data collected.")
 }
