@@ -25,5 +25,6 @@ Email: kathryn.bjorklund@su.se <br>
 <br>
     
 
+* <strong>Slides.Rmd</strong>: Presentation file
 * <strong>CollectGoogleNewsURLs.R</strong>: Collect Google News URLs from RSS feed
 * <strong>ScrapeGoogleNewsURLs.R</strong>: Extract publication date, full text, and domain from Google News URLs (HTML)
