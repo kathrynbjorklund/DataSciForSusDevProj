@@ -1,4 +1,4 @@
-# Get 'Real' URLs
+# Get 'Real' Article URLs from Google News Stem
 
 # Packages
 library(chromote) # Headless Chrome browser
