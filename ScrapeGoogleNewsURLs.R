@@ -560,3 +560,6 @@ for (batch in seq_len(num_batches)) {
   write.csv(batch_df, out_file, row.names = FALSE)
   cat("   => Batch", batch, "written to", out_file, "\n")
 }
+
+# References
+# ChatGPT. OpenAI, 12 Mar. 2025,  https://chat.openai.com.                       
