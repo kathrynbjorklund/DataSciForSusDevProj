@@ -1,0 +1,149 @@
+---
+title: "Data Science for Sustainable Development Project"
+author: "Kate Bjorklund"
+date: "2025-06-23"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Research questions
+
+- What types of impacts (e.g. social, ecological, economic; proximate vs. long-term) are associated with diverse emerging pest and pathogen species?
+- How are these impacts distributed regionally?
+- How do these impacts evolve over time? 
+
+<img src="DALL·E 2022-12-07 10.16.19 - fall armyworms shopping for corn ukiyo-e style.png" width="40%" style="display:block; margin:auto;" />
+
+## Data source
+
+- Digital news articles from [Google News](https://news.google.com/)
+- Code used to collect articles: [CollectGoogleNewsURLs.R on GitHub](https://github.com/kathrynbjorklund/DataSciForSusDevProj/blob/main/CollectGoogleNewsURLs.R)
+- Code used to scrape articles: [ScrapeGoogleNewsURLs.R on GitHub](https://github.com/kathrynbjorklund/DataSciForSusDevProj/blob/main/ScrapeGoogleNewsURLs.R)
+
+## 
+
+```{r ebola_plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Packages
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(lubridate)
+
+# Load data
+dframe <- read_csv("EB.csv")
+
+# Rename column for convenience
+dframe <- dframe %>%
+  rename(pubDate = `publication date`)
+
+# Convert to date
+dframe$pubDate <- as.Date(dframe$pubDate)
+
+# Filter for date range
+filtered_df <- dframe %>%
+  filter(pubDate >= as.Date("2022-08-01") & pubDate <= as.Date("2022-10-31"))
+
+# Count articles per day
+article_counts <- filtered_df %>%
+  group_by(pubDate) %>%
+  summarise(n = n(), .groups = "drop")
+
+# Plot with weekly x-axis and whole-number y-axis
+ggplot(article_counts, aes(x = pubDate, y = n)) +
+  geom_line(color = "steelblue") +
+  scale_y_continuous(breaks = seq(0, max(article_counts$n), by = 1)) +
+  scale_x_date(
+    date_breaks = "7 days",
+    date_labels = "%b %d"
+  ) +
+  labs(
+    title = "Ebola News Coverage (Aug–Oct 2022, US)",
+    x = "Date",
+    y = "Number of Articles"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9)
+  )
+  
+```
+
+## 
+
+```{r ebola-timeline, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=7, out.width="100%"}
+
+#Packages
+library(ggplot2)
+library(dplyr)
+library(ggalt)
+library(cowplot)
+library(tibble)
+library(lubridate)
+library(readxl)
+
+# Create data to plot
+data <- tribble(
+  ~start_date, ~event, ~displ,
+  ymd(20220916), "Nancy J. Sullivan Named New NEIDL Director", 0.05,
+  ymd(20220920), "Uganda Declares Ebola Outbreak After Fatality", -0.05,
+  ymd(20220921), "Bunyoro residents, leaders demand health surveillance following Ebola outbreak", 0.1,
+  ymd(20220922), "Seven Ebola cases, one death confirmed in Uganda, WHO scales up response", -0.1,
+  ymd(20220923), "Uganda's Ebola death toll rises to 12", 0.03,
+  ymd(20220924), "Government approves funds to fight Ebola", -0.05,
+  ymd(20220925), "Uganda's Ebola caseload rises to 16 as outbreak spreads", 0.06
+)
+
+# Function to shift x-axis to y=0
+shift_axis <- function(p, xmin, xmax, y = 0) {
+  g <- ggplotGrob(p)
+  ax <- g[["grobs"]][g$layout$name == "axis-b"][[1]]
+  p + annotation_custom(grid::grobTree(ax, vp = grid::viewport(y = 1, height = sum(ax$height))),
+                        ymax = y, ymin = y) +
+    annotate("segment", y = 0, yend = 0, x = xmin, xend = xmax,
+             arrow = arrow(length = unit(0.1, "inches"))) +
+    theme_void()
+}
+
+# Set vertical text position
+vjust <- ifelse(data$displ > 0, -0.5, 1.5)
+
+# Create base plot
+p1 <- data %>% 
+  ggplot(aes(start_date, displ)) +
+  geom_lollipop(point.size = 1) +
+  geom_text(aes(label = event),
+            hjust = 0.5, vjust = vjust, size = 2.5) +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.line = element_blank(),
+    axis.text.x = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, size = 20, face = "bold", margin = margin(b = 10))
+  ) +
+  labs(title = "Ebola Headlines Over Time (US)") +
+  scale_x_date(
+    breaks = data$start_date,
+    labels = format(data$start_date, "%b %d"),
+    expand = c(0, 0)
+  ) +
+  coord_cartesian(
+    xlim = c(min(data$start_date) - days(2), max(data$start_date) + days(2)),
+    ylim = c(-0.4, 0.4)
+  )
+
+# Final timeline with shifted axis at y = 0
+timeline <- shift_axis(p1, min(data$start_date) - days(1), max(data$start_date) + days(1))
+
+# Plot
+plot(timeline)
+
+#Reference
+#https://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
+
+
